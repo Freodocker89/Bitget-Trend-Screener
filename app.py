@@ -70,7 +70,8 @@ def classify_trend(df):
 def analyze_trends(symbols, timeframes):
     results = []
     for tf in timeframes:
-        for symbol in symbols:
+        for idx, symbol in enumerate(symbols):
+            st.info(f"Scanning {symbol} on {tf} ({idx+1}/{len(symbols)})")
             df = fetch_ohlcv(symbol, tf)
             if df is None or len(df) < 20:
                 continue
@@ -98,6 +99,8 @@ if st.button("Run Screener"):
             uptrend_df = result_df[result_df['Trend'].str.contains('Uptrend')]
             downtrend_df = result_df[result_df['Trend'].str.contains('Downtrend')]
             choch_df = result_df[result_df['Trend'].str.contains('Change of Character')]
+            broken_df = result_df[result_df['Trend'].str.contains('Trend Broken')]
+            no_trend_df = result_df[result_df['Trend'] == 'No Trend']
 
             if not uptrend_df.empty:
                 st.markdown("### 🟢 Uptrend")
@@ -110,7 +113,11 @@ if st.button("Run Screener"):
             if not choch_df.empty:
                 st.markdown("### ⚠️ Change of Character")
                 st.dataframe(choch_df, use_container_width=True)
-        else:
-            st.warning("No clean trends detected.")
 
-        st.success("Scan complete!")
+            if not broken_df.empty:
+                st.markdown("### ⚫ Trend Broken")
+                st.dataframe(broken_df, use_container_width=True)
+
+            if not no_trend_df.empty:
+                st.markdown("### ⚪ No Trend")
+                st.dataframe(no_trend_df, use_container_width=True)
